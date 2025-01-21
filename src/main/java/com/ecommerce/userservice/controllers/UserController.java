@@ -52,10 +52,11 @@ public class UserController {
     }
 
     @GetMapping("/logout")
-    public ResponseEntity<String> logout(@RequestBody LogoutRequestDTO logoutRequestDTO) {
-        User user = userService.logout(logoutRequestDTO.getTokenValue());
-        if(user == null){
-            throw new UserServiceException("User not found");
+    public ResponseEntity<String> logout(@RequestParam String token) {
+        try{
+            userService.logout(token);
+        }catch (Exception e){
+            throw new UserServiceException(e.getMessage());
         }
         return new ResponseEntity<String>("User logged out successfully", HttpStatus.OK);
 

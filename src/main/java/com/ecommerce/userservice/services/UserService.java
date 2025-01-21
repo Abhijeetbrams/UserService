@@ -10,6 +10,6 @@ public interface UserService {
     User signUp(SignUpRequestDTO signUpRequestDTO);
     Token login(LoginRequestDTO loginRequestDTO);
     UserDTO getUser(String username);
-    User logout(String tokenValue);
+    void logout(String tokenValue);
     User validate(String tokenValue);
 }

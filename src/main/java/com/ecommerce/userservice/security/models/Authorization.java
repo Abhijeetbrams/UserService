@@ -14,7 +14,13 @@ public class Authorization {
 	private String principalName;
 	private String authorizationGrantType;
 	@Column(length = 1000)
-	@Lob
+	@Lob // is used to specify that a particular entity field should be persisted as a Large Object (LOB) in the database.
+	// Allows databases to handle and optimize storage and retrieval of large data efficiently.
+	// LOB fields can consume significant memory if eagerly fetched. - @Basic(fetch = FetchType.LAZY)
+	// Why we have put Lob even the these are normal string fields?
+	// because we are storing lengthy data in these fields, because max row size in mysql is 65535 bytes.
+	// So, if we have a string field of length 1000 and some are 4000 then it will exceed the limit.
+	// So, we have put @Lob to store these fields in separate table.
 	private String authorizedScopes;
 	@Column(length = 4000)
 	@Lob

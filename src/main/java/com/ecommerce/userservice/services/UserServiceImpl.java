@@ -47,16 +47,16 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Token login(LoginRequestDTO loginRequestDTO) {
-        User user = userRepository.findByEmail(loginRequestDTO.getEmail());
-        if (user == null) {
+        Optional<User> optionalUser = userRepository.findByEmail(loginRequestDTO.getEmail());
+        if (optionalUser.isEmpty()) {
             throw new RuntimeException("User not found");
         }
-        if (!passwordEncoder.matches(loginRequestDTO.getPassword(),user.getPassword())) {
+        if (!passwordEncoder.matches(loginRequestDTO.getPassword(),optionalUser.get().getPassword())) {
             throw new RuntimeException("Invalid password");
         }
 
         Token token = new Token();
-        token.setUser(user);
+        token.setUser(optionalUser.get());
 
         // Setting Random Token Value
         token.setValue(RandomStringUtils.randomAlphanumeric(128));
@@ -76,10 +76,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDTO getUser(String email) {
-        User user = userRepository.findByEmail(email);
+        Optional<User> user = userRepository.findByEmail(email);
         UserDTO userDTO = new UserDTO();
-        userDTO.setUsername(user.getUsername());
-        userDTO.setEmail(user.getEmail());
+        userDTO.setUsername(user.get().getUsername());
+        userDTO.setEmail(user.get().getEmail());
         return userDTO;
     }
 

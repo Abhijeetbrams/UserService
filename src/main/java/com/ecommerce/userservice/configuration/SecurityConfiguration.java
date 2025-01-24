@@ -15,23 +15,23 @@ import org.springframework.security.web.SecurityFilterChain;
 // like authentication and authorization.
 
 public class SecurityConfiguration {
-
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/users/signup").permitAll() // Allow public access to signup
-                        .requestMatchers("/users/login").permitAll()  // Allow public access to login
-                        .requestMatchers("/users/logout").permitAll() // Allow public access to logout
-                        .requestMatchers("/users/validate").permitAll()
-                        .anyRequest().authenticated()                // Secure other endpoints
-                )
-                .csrf(csrf -> csrf.disable())
-                // Disable - For REST APIs or token-based authentication where CSRF is irrelevant.
-                // Enable - For traditional web applications using session-based authentication (e.g., form-based login).
-                .httpBasic(Customizer.withDefaults()); // Use HTTP Basic Authentication
-
-
-        return http.build();
-    }
+//
+//    @Bean
+//    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+//        http
+//                .authorizeHttpRequests(auth -> auth
+//                        .requestMatchers("/users/signup").permitAll() // Allow public access to signup
+//                        .requestMatchers("/users/login").permitAll()  // Allow public access to login
+//                        .requestMatchers("/users/logout").permitAll() // Allow public access to logout
+//                        .requestMatchers("/users/validate").permitAll()
+//                        .anyRequest().authenticated()                // Secure other endpoints
+//                )
+//                .csrf(csrf -> csrf.disable())
+//                // Disable - For REST APIs or token-based authentication where CSRF is irrelevant.
+//                // Enable - For traditional web applications using session-based authentication (e.g., form-based login).
+//                .httpBasic(Customizer.withDefaults()); // Use HTTP Basic Authentication
+//
+//
+//        return http.build();
+//    }
 }

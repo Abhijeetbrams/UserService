@@ -43,9 +43,10 @@ import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 public class SecurityConfig {
 
     @Bean
-    @Order(1)
+    @Order(1) // assigns a priority to beans, with lower values indicating higher priority (executed earlier).
     public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http)
             throws Exception {
+        // A Spring Security filter chain for the Protocol Endpoints - OAuth2 Authorization Endpoint
         OAuth2AuthorizationServerConfigurer authorizationServerConfigurer =
                 OAuth2AuthorizationServerConfigurer.authorizationServer();
 
@@ -73,6 +74,7 @@ public class SecurityConfig {
 
     @Bean
     @Order(2)
+    // A Spring Security filter chain for authentication.
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http)
             throws Exception {
         http
@@ -87,6 +89,7 @@ public class SecurityConfig {
     }
 
     @Bean
+    // An instance of UserDetailsService for retrieving users to authenticate.
     public UserDetailsService userDetailsService() {
         UserDetails userDetails = User.withDefaultPasswordEncoder()
                 .username("user")
@@ -98,6 +101,8 @@ public class SecurityConfig {
     }
 
     @Bean
+    // An instance of RegisteredClientRepository for managing clients.
+    // Here client is the user who is accessing the application.
     public RegisteredClientRepository registeredClientRepository() {
         RegisteredClient oidcClient = RegisteredClient.withId(UUID.randomUUID().toString())
                 .clientId("oidc-client")
@@ -116,6 +121,7 @@ public class SecurityConfig {
     }
 
     @Bean
+    // An instance of com.nimbusds.jose.jwk.source.JWKSource for signing access tokens.
     public JWKSource<SecurityContext> jwkSource() {
         KeyPair keyPair = generateRsaKey();
         RSAPublicKey publicKey = (RSAPublicKey) keyPair.getPublic();
@@ -128,6 +134,7 @@ public class SecurityConfig {
         return new ImmutableJWKSet<>(jwkSet);
     }
 
+    // An instance of java.security.KeyPair with keys generated on startup used to create the JWKSource above.
     private static KeyPair generateRsaKey() {
         KeyPair keyPair;
         try {
@@ -142,11 +149,13 @@ public class SecurityConfig {
     }
 
     @Bean
+    // An instance of JwtDecoder for decoding signed access tokens.
     public JwtDecoder jwtDecoder(JWKSource<SecurityContext> jwkSource) {
         return OAuth2AuthorizationServerConfiguration.jwtDecoder(jwkSource);
     }
 
     @Bean
+    // An instance of AuthorizationServerSettings to configure Spring Authorization Server.
     public AuthorizationServerSettings authorizationServerSettings() {
         return AuthorizationServerSettings.builder().build();
     }

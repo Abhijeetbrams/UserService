@@ -1,13 +1,18 @@
 package com.ecommerce.userservice.services;
 
 import com.ecommerce.userservice.DTOs.LoginRequestDTO;
+import com.ecommerce.userservice.DTOs.SendEmailDTO;
 import com.ecommerce.userservice.DTOs.SignUpRequestDTO;
 import com.ecommerce.userservice.DTOs.UserDTO;
+import com.ecommerce.userservice.configuration.KafkaProducerClient;
 import com.ecommerce.userservice.models.Token;
 import com.ecommerce.userservice.models.User;
 import com.ecommerce.userservice.repository.TokenRepository;
 import com.ecommerce.userservice.repository.UserRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.kafka.clients.producer.KafkaProducer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -22,18 +27,26 @@ public class UserServiceImpl implements UserService {
     // private final RoleRepository roleRepository;
      private TokenRepository tokenRepository;
      private BCryptPasswordEncoder passwordEncoder;
+     //Step 3:- Injecting the KafkaProducerClient bean in the UserServiceImpl after adding dependency of Spring Kafka in the pom.xml
+     private KafkaProducerClient kafkaProducerClient;
+     private ObjectMapper objectMapper;
 
-    public UserServiceImpl(UserRepository userRepository,BCryptPasswordEncoder passwordEncoder, TokenRepository tokenRepository) {
+    public UserServiceImpl(UserRepository userRepository,BCryptPasswordEncoder passwordEncoder,
+                           TokenRepository tokenRepository, KafkaProducerClient kafkaProducerClient,
+                           ObjectMapper objectMapper) {
         this.userRepository = userRepository;
         // this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.tokenRepository=tokenRepository;
+        this.kafkaProducerClient = kafkaProducerClient;
+        this.objectMapper=objectMapper;
     }
 
     @Override
     public User signUp(SignUpRequestDTO signUpRequestDTO) {
         // Check First Email Id Already registered or not
-        if (userRepository.findByEmail(signUpRequestDTO.getEmail()) != null) {
+        Optional<User> optionalUser = userRepository.findByEmail(signUpRequestDTO.getEmail());
+        if (optionalUser.isPresent()) {
             throw new RuntimeException("User already exists");
         }
         User user = new User();
@@ -42,7 +55,26 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(signUpRequestDTO.getPassword()));
         //Role role = roleRepository.findByValue("USER");
         // user.setRole(role);
-        return userRepository.save(user);
+        user= userRepository.save(user);
+
+        // Step 3:- Sending the message to the Kafka topic, here our use-case is after saving the user in the database, we are sending the user email to the Kafka topic.
+        SendEmailDTO sendEmailDTO = new SendEmailDTO();
+        sendEmailDTO.setRecipient(user.getEmail());
+        sendEmailDTO.setSender("abybrams@gmail.com");
+        sendEmailDTO.setSubject("Welcome to Ecommerce");
+        sendEmailDTO.setBody("Welcome to Ecommerce, you have successfully registered with us.");
+
+        // Step 4:- Here we need to send the message to Topic named SendEmail and Json message is sendEmailDTO.
+        // However sendEmailDTO is a DTO or a class object we need to convert it to JSON format using Jackson Library.
+        String message="";
+        try {
+            message=objectMapper.writeValueAsString(sendEmailDTO);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        kafkaProducerClient.sendMessage("SendEmail",message);
+
+        return user;
     }
 
     @Override

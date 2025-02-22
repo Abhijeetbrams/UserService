@@ -77,10 +77,12 @@
         // A Spring Security filter chain for authentication.
         public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http)
                 throws Exception {
+
             http
                     .authorizeHttpRequests((authorize) -> authorize
                             .anyRequest().permitAll()
                     )
+                    // Disable Cross-Origin Resource Sharing (CORS) and Cross-Site Request Forgery (CSRF) protection
                     .cors().disable()
                     .csrf().disable()
                     // Form login handles the redirect to the login page from the

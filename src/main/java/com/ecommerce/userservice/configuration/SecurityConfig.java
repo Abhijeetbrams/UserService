@@ -75,6 +75,7 @@
         @Bean
         @Order(2)
         // A Spring Security filter chain for authentication.
+        // This filter chain is used to authenticate users and create access tokens.
         public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http)
                 throws Exception {
 
@@ -92,7 +93,7 @@
             return http.build();
         }
 
-        // Commenting becuase we're going to use the database to store users data - Model - Client
+        // Commenting because we're going to use the database to store users data - Model - Client
 
 //        @Bean
 //        // An instance of UserDetailsService for retrieving users to authenticate.
